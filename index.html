@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Change Helper</title>
+
+  <!-- PWA App Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#8a6dcc">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrapper">
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <!-- CASHIER VIEW -->
+    <div class="cashier-view" id="cashier-view">
+      <!-- ORDER INFO SECTION -->
+      <div class="order-info-section">
+        <div class="section-title">
+          <i class="fas fa-receipt"></i> Order Information
+        </div>
+        <div class="order-info-row">
+          <input type="text" class="order-input" id="order-number" placeholder="Order Number" maxlength="10">
+          <select class="order-type-select" id="order-type">
+            <option value="walkin">Walk-in</option>
+            <option value="tawag">Tawag (Call)</option>
+          </select>
+          <input type="text" class="order-input" id="customer-name" placeholder="Customer Name" style="display: none;">
+          <input type="time" class="time-input" id="pickup-time" style="display: none;">
+        </div>
+        <div class="order-info-row">
+          <textarea class="notes-input" id="order-notes" placeholder="Special instructions (optional)"></textarea>
+        </div>
+        <div class="error-message" id="order-number-error">Order number already exists</div>
+      </div>
+
+      <!-- SPLIT SCREEN CONTENT -->
+      <div class="cashier-split-screen">
+        <!-- FOOD GRID -->
+        <div class="food-grid-container">
+          <div class="section-title">
+            <i class="fas fa-utensils"></i> Menu
+          </div>
+          <div class="food-grid">
+            <!-- Meat Dishes -->
+            <button class="btn-food meat" onclick="addToCart(27, 'PBQ')">
+              <div class="food-icon">🍢</div>
+              <div class="food-name">PBQ</div>
+              <div class="food-price">₱27</div>
+            </button>
+
+            <!-- Noodles -->
+            <button class="btn-food noodles" onclick="addToCart(240, 'Pancit')">
+              <div class="food-icon">🍝</div>
+              <div class="food-name">Pancit</div>
+              <div class="food-price">₱240</div>
+            </button>
+            <button class="btn-food noodles" onclick="addToCart(220, 'Lomi')">
+              <div class="food-icon">🍜</div>
+              <div class="food-name">Lomi</div>
+              <div class="food-price">₱220</div>
+            </button>
+
+            <!-- Veggie Mixes -->
+            <button class="btn-food veggie" onclick="addToCart(230, 'Chopsuey')">
+              <div class="food-icon">🥗</div>
+              <div class="food-name">Chopsuey</div>
+              <div class="food-price">₱230</div>
+            </button>
+
+            <!-- Noodles -->
+            <button class="btn-food noodles" onclick="addToCart(230, 'Bihon')">
+              <div class="food-icon">🍝</div>
+              <div class="food-name">Bihon</div>
+              <div class="food-price">₱230</div>
+            </button>
+            <button class="btn-food noodles" onclick="addToCart(240, 'Bam-e')">
+              <div class="food-icon">🍲</div>
+              <div class="food-name">Bam-e</div>
+              <div class="food-price">₱240</div>
+            </button>
+            <button class="btn-food noodles" onclick="addToCart(230, 'Sotanghon')">
+              <div class="food-icon">🍜</div>
+              <div class="food-name">Sotanghon</div>
+              <div class="food-price">₱230</div>
+            </button>
+
+            <!-- Seafood -->
+            <button class="btn-food seafood" onclick="addToCart(300, 'Fish Tinola')">
+              <div class="food-icon">🐟</div>
+              <div class="food-name">Fish Tinola</div>
+              <div class="food-price">₱300</div>
+            </button>
+
+            <!-- Veggie Mixes -->
+            <button class="btn-food veggie" onclick="addToCart(270, 'Four Season')">
+              <div class="food-icon">🥘</div>
+              <div class="food-name">Four Season</div>
+              <div class="food-price">₱270</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ORDER CART -->
+        <div class="order-cart-container">
+          <div class="order-section">
+            <div class="section-title">
+              <i class="fas fa-shopping-cart"></i> Your Order
+            </div>
+            <div class="cart-items" id="cart-items">
+              <!-- Cart items will be populated here -->
+            </div>
+            <div class="total-bar">
+              <div class="total-amount" id="total-display">Total: ₱0</div>
+              <button class="btn-proceed" onclick="openPayment()">
+                <i class="fas fa-credit-card"></i> Pay
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING VIEW -->
+    <div class="pending-view" id="pending-view">
+      <div class="orders-container">
+        <div class="order-queue">
+          <div class="section-title">
+            <i class="fas fa-phone"></i> Pending Tawag Orders
+          </div>
+          <div id="pending-orders">
+            <!-- Pending orders will appear here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KITCHEN VIEW -->
+    <div class="kitchen-view" id="kitchen-view">
+      <div class="orders-container">
+        <div class="order-queue">
+          <div class="section-title">
+            <i class="fas fa-utensils"></i> Walk-in Orders
+          </div>
+          <div id="kitchen-walkin-orders">
+            <!-- Walk-in orders will appear here -->
+          </div>
+        </div>
+
+        <div class="order-queue">
+          <div class="section-title">
+            <i class="fas fa-phone"></i> Tawag Orders
+          </div>
+          <div id="kitchen-tawag-orders">
+            <!-- Tawag orders will appear here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PBQ VIEW -->
+    <div class="pbq-view" id="pbq-view">
+      <div class="orders-container">
+        <div class="order-queue">
+          <div class="section-title">
+            <i class="fas fa-utensils"></i> Walk-in Orders
+          </div>
+          <div id="pbq-walkin-orders">
+            <!-- Walk-in orders will appear here -->
+          </div>
+        </div>
+
+        <div class="order-queue">
+          <div class="section-title">
+            <i class="fas fa-phone"></i> Tawag Orders
+          </div>
+          <div id="pbq-tawag-orders">
+            <!-- Tawag orders will appear here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MORE VIEW -->
+    <div class="more-view" id="more-view">
+      <div class="more-options">
+        <div class="more-option" onclick="toggleTheme()">
+          <div class="more-icon">
+            <i class="fas fa-moon"></i>
+          </div>
+          <div class="more-label">Dark Mode</div>
+          <div class="toggle-switch" id="theme-switch">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="more-option" onclick="toggleSound()">
+          <div class="more-icon">
+            <i class="fas fa-volume-up"></i>
+          </div>
+          <div class="more-label">Sound</div>
+          <div class="toggle-switch active" id="sound-switch">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="more-option" onclick="showHistory()">
+          <div class="more-icon">
+            <i class="fas fa-history"></i>
+          </div>
+          <div class="more-label">Transaction History</div>
+          <i class="fas fa-chevron-right" style="color: #8a6dcc;"></i>
+        </div>
+
+        <div class="more-option" onclick="clearHistory()">
+          <div class="more-icon">
+            <i class="fas fa-trash"></i>
+          </div>
+          <div class="more-label">Clear History</div>
+        </div>
+
+        <div class="more-option" onclick="showSummary()">
+          <div class="more-icon">
+            <i class="fas fa-chart-bar"></i>
+          </div>
+          <div class="more-label">Sales Summary</div>
+          <i class="fas fa-chevron-right" style="color: #8a6dcc;"></i>
+        </div>
+
+        <div class="more-option">
+          <div class="more-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="more-label">Smart Change Helper v2.0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB NAVIGATION -->
+  <div class="tab-navigation">
+    <button class="tab-btn active" onclick="switchTab('cashier')">
+      <i class="fas fa-cash-register tab-icon"></i>
+      <span>Cashier</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('pending')">
+      <i class="fas fa-phone tab-icon"></i>
+      <span>Pending</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('kitchen')">
+      <i class="fas fa-utensils tab-icon"></i>
+      <span>Kitchen</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('pbq')">
+      <i class="fas fa-utensils tab-icon"></i>
+      <span>PBQ</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('more')">
+      <i class="fas fa-bars tab-icon"></i>
+      <span>More</span>
+    </button>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal" id="payment-modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closePayment()">×</span>
+    <div class="section-title">
+      <i class="fas fa-cash-register"></i> Customer Payment
+    </div>
+
+    <!-- Payment Info -->
+    <div class="payment-info">
+      <div>
+        <div class="payment-label">Total</div>
+        <div class="payment-value" id="payment-total">₱0</div>
+      </div>
+      <div>
+        <div class="payment-label">Paid</div>
+        <div class="payment-value" id="payment-paid">₱0</div>
+      </div>
+      <div>
+        <div class="payment-label">Change</div>
+        <div class="payment-value" id="payment-change">₱0</div>
+      </div>
+    </div>
+
+    <!-- Eco Bag Controls -->
+    <div class="eco-bag-controls">
+      <button class="btn-exact-compact" onclick="setExactAmount()">
+        <i class="fas fa-equals"></i> Exact Amount
+      </button>
+      <button class="btn-eco-bag" id="eco-bag-btn" onclick="addEcoBag()">Bag ₱5</button>
+      <button class="btn-eco-small btn-eco-minus" onclick="removeEcoBag()">−</button>
+      <button class="btn-eco-small" onclick="addEcoBag()">+</button>
+    </div>
+
+    <!-- Quick Amounts -->
+    <div class="quick-amounts-compact">
+      <div class="quick-amount" onclick="addQuickAmount(20)">₱20</div>
+      <div class="quick-amount" onclick="addQuickAmount(50)">₱50</div>
+      <div class="quick-amount" onclick="addQuickAmount(100)">₱100</div>
+      <div class="quick-amount" onclick="addQuickAmount(200)">₱200</div>
+      <div class="quick-amount" onclick="addQuickAmount(500)">₱500</div>
+      <div class="quick-amount" onclick="addQuickAmount(1000)">₱1,000</div>
+    </div>
+
+    <!-- Calculator -->
+    <div class="compact-calculator" id="compact-calculator">
+      <!-- Calculator buttons will be populated here -->
+    </div>
+
+    <!-- Payment Action Buttons -->
+    <div class="payment-actions">
+      <button class="btn-pending-action" onclick="saveAsPending()">
+        <i class="fas fa-clock"></i> Save as Pending
+      </button>
+      <button class="btn-proceed" onclick="calculateChange()">
+        <i class="fas fa-calculator"></i> Calculate Change
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ITEMS MODAL -->
+<div class="modal" id="add-items-modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeAddItems()">×</span>
+    <div class="section-title">
+      <i class="fas fa-plus"></i> Add Items to Order
+    </div>
+
+    <div class="add-items-grid" id="add-items-grid">
+      <!-- Add items buttons will be populated here -->
+    </div>
+
+    <div class="payment-actions">
+      <button class="btn-proceed" onclick="confirmAddItems()" style="width:100%;">
+        <i class="fas fa-check"></i> Add Items to Order
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="modal" id="result-modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeResult()">×</span>
+    <div class="section-title">
+      <i class="fas fa-file-invoice-dollar"></i> Change Result
+    </div>
+
+    <div class="result-change" id="result-change">₱0</div>
+
+    <div class="suggestions" id="result-suggestions">
+      <div class="section-title" style="margin-bottom:15px;">
+        <i class="fas fa-lightbulb"></i> Smart Suggestions
+      </div>
+      <div id="suggestion-list"></div>
+    </div>
+
+    <button class="btn-proceed" onclick="completeTransaction()" style="width:100%;">
+      <i class="fas fa-check-circle"></i> Transaction Done
+    </button>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal" id="history-modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeHistory()">×</span>
+    <div class="section-title">
+      <i class="fas fa-history"></i> Transaction History
+    </div>
+    <div class="history-list" id="history-list">
+      <!-- History items will be populated here -->
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY MODAL -->
+<div class="modal" id="summary-modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeSummary()">×</span>
+    <div class="section-title">
+      <i class="fas fa-chart-pie"></i> Sales Summary
+    </div>
+    <div class="summary-grid" id="summary-grid">
+      <!-- Summary items will be populated here -->
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
